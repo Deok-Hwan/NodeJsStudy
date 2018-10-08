@@ -410,23 +410,542 @@ http.createServer(app).listen(3000, function(){
  // body-parser 미들웨어
  // POST로 요청해을 때 요청 파라미터를 확인할 수 있도록 만들어 둔 body-parser 미들웨어에 대해 알아보자.
  // POST 방식으로 요청할 때는 본문인 본문 영역에 요청 파라미터가 들어 있게 되므로 요청 파라미터를 파싱하는 방법이 GET 방식과는 달라진다.
+ // body-parser 미들웨어는 클라이언트가 POST 방식으로 요청할 때 본문 영역에 들어 있는 요청 파라미터들을 파싱하여 요청 객체의 body 속성에 넣어 줍니다.
+ 
+ 
+ // login.html
+ 
+ // 
+
+ /**
+  * Module dependencies.
+  */
+
+ var express = require('express')
+   , http = require('http')
+   , path = require('path');
+
+ var bodyParser = require('body-parser');
+
+ var app = express();
+
+ app.set('port', process.env.PORT || 3000);
+
+ app.use(express.static(path.join(__dirname, 'public')));
+
+ // body-parser를 사용해 application/x-www-form-urlencoded 파싱
+ app.use(bodyParser.urlencoded({ extended: true }));
+
+
+ app.use(function(req, res, next) {
+ 	console.log('첫번째 미들웨어에서 요청을 처리함.');
+
+ 	var paramId = req.body.id || req.query.id;
+ 	var paramPassWord = req.body.password || req.query.password;
+ 	
+ 	res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+ 	res.write('<h1>Express 서버에서 응답한 결과입니다.</h1>');
+ 	res.write('<div><p>Param id : ' + paramId + '</p></div>');
+ 	res.write('<div><p>Param password : ' + paramPassword + '</p></div>');
+ 	res.end();
+ });
+
+
+ http.createServer(app).listen(app.get('port'), function(){
+   console.log('Express server listening on port ' + app.get('port'));
+ });
+
+ // body-parser 모듈을 사용하기 위한 설정은 두 줄입니다.
+ // app 객체의 use() 메소드를 사용해 미들웨어를 설정하는데 bodyParser.urlencoded() 메소드를 호출하면서
+ // 미들웨어를 설정하면 application/x-www-form-urlencoded 형식으로 전달된 요청 파라미터를 파싱할 수 있습니다.
+ // bodyParser.json() 메소드를 호출하면서 미들웨어를 설정하면 application/json 형식으로 전달된 요청 파라미터를 참조 할 수 있습니다.
+ 
+ // 클라이언트에서 요청할 때 GET방식인지, POST 방식인지 요청하는 것인지 모를 때는 다음과 같이 작성한다.
+ var paramId = req.body.id || req.query.id;
+	
+ // 05-4 요청 라우팅하기.
+ // 요청 URL을 일일이 확인해야 하는 번거로운 문제를 해결하는 것이 라우터 미들웨어 입니다.
+ 
+ // 라우터 미들웨어 사용하기
+ // 라우터 객체 참조
+ var router = express.Router();
+ 
+ // 라우팅 함수 등록
+ router.route('/process/login').get(...);
+ router.route('/process/login').post(...);
+ 
+ // 라우터 객체를 app 객체에 등록
+ app.use('/', router);
+ 
+ // 클라이언트에서 요청한 요청 패스에 따라 실행될 함수는 라우터(router)객체를 사용해 등록합니다.
+ // router 객체에는 router() 메소드가 있어 요청 패스를 지정할 수 있으며, get() 이나 post() 메소드를 호출하면 실행될
+ // 함수를 등록할 수 있습니다.
+ 
+ // 메소드 이름					설명	
+ // get(callback)			GET 방식으로 특정 패스 요청이 발생했을 때 사용할 콜백 함수를 지정
+ // post(callback)			POST 방식으로 특정 패스 요청이 발생했을 때 사용할 콜백 함수를 지정
+ // put(callback)			PUT 방식으로 특정 패스 요청이 발생했을 때 사용할 콜백 함수 지정
+ // delete(callback)		DELETE 방식으로 특정 패스 요청이 발생했을 때 사용할 콜백 함수 지정
+ // all(callbacK) 			모든 요청 방식을 처리하며, 특정 패스 요청이 발생했을 때 사용할 콜백 함수를 지정
+ 
+  // 클라이언트에서 특정 패스로 요청할 경우 GET 방식으로 요청할 때는 get() 메소드를 사용해 함수를 등록해야 하며,
+  // POST 방식으로 요청할 때는 post() 메소드를 사용해 등록해야 한다. 
+
+ /**
+  * 
+  */
+ // 라우터 객체 참조
+ var router = express.Router();
+ 
+ // 라우팅 함수 등록
+ router.route('/porcess/login').post(function(req, res){
+	console.log('/process/login'); //처리함 
+	
+	var paramId = req.param('id');
+	var paramPassword = req.param('password');
+	
+	res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+	res.write('<h1>Express 서버에서 응답한 결과입니다.</h1>');
+	res.write('<div><p>Param id : ' + paramId + '</p></div>');
+	res.write('<div><p>Param password : ' + paramPassword + '</p></div>');
+	res.write("<br><br><a href='/public/login2.html'>로그인 페이지로 돌아가기</a>");
+	res.end();
+ });
+ 
+ // 라우터 객체를 app 객체에 등록
+ app.use('/', router);
+ 
+ // app.post 메소드를 호출할 때 전달하는 첫 번째 파라미터 값이 /process/login 에서 /process/login:name 으로 변경되었습니다.
+ // 이것은 /process/login/ 뒤에 오는 값을 파라미터로 처리하겠다는 의미입니다.
+ // 지정한 파라미터는 req.params 객체 안에 들어갑니다.따라서 :name으로 표시된 부분에 넣어 전달된 값은 
+ // req.params.name 속성으로 접군할 수 있습니다. 이것은 토큰이라고 합니다.
+ 
+ // 오류 페이지 보여 주기
+ // 지정한 패스 이외에 모든 패스로 요청이 들어왔을 때 오류 페이지가 보이도록 처리해 주어야 합니다.
+ 
+ // 등록되지 않은 패스에 대해 페이지 오류 응답
+ app.all('*', function(req, res){
+	 res.satus(404).send('<h1> ERROR - 페이지를 찾을 수 없습니다.');
+ });
+
+ //express-error-handler 미들웨어로 오류 페이지 보내기
+ //다음은 express-error-handler 미들웨어를 사용해 404.html 페이지를 응답으로 보내 주는 예제입니다.
+ // 오류 핸들러 모듈 사용
+ var expressErrorHandler = require('express-error-handler');
+ 
+ // 모든 router 처리 끝난 후 404 오류 페이지 처리
+ var errorHandler = expressErrorHandler({
+	 static : {
+		 '404' : './public/404.html'
+	 }
+ });
+ 
+ app.use( expressErrorHandler.httpError(404) );
+ app.use(errorHandler);
+ 
+ 
+ // 쿠키와 세션 관리하기
+ // 사용자가 로그인한 상태인지 아닌지 확인하고 싶을 때에는 쿠키나 세션을 사용합니다.
+ // 쿠키는 클라이언트 웹 브라우저에 저장되는 정보이며, 세션은 웹 서버에 저장되는 정보입니다.
+ 
+ // 쿠키 처리하기
+ // 쿠키는 클라이언트 웹 브라우저에 저장되는 정보로 일정 기간 동안 저장하고 싶을 때 사용합니다.
+ // 익스프레스에서는 cookie-parser 미들웨어를 사용하면 쿠키를 설정하거나 확인할 수 있습니다.
  
 
+ /**
+  * cookie parser 미들웨어 사용하기
+  * 
+  * 쿠키 사용하기
+  */
+
+ var express = require('express')
+   , http = require('http')
+   , path = require('path');
+
+ var bodyParser = require('body-parser');
+ var cookieParser = require('cookie-parser');
+
+ // 에러 핸들러 모듈 사용
+ var expressErrorHandler = require('express-error-handler');
+
+ var app = express();
+
+ app.set('port', process.env.PORT || 3000);
+
+ app.use('/public', express.static(path.join(__dirname, 'public')));
+
+ app.use(bodyParser.urlencoded({ extended: true }));
+
+ app.use(express.cookieParser());
+  
+ // 쿠키 정보를 확인함
+ app.get('/process/showCookie', function(req, res) {
+ 	console.log('/process/getName 호출됨.');
+
+ 	res.send(req.cookies);
+ });
+
+ // 쿠키에 이름 정보를 설정함
+ app.get('/process/setUserCookie', function(req, res) {
+ 	console.log('/process/setUserCookie 호출됨.');
+
+ 	// 쿠키 설정
+ 	res.cookie('user', {
+ 		id: 'mike',
+ 		name: '소녀시대',
+ 		authorized: true
+ 	});
+ 	
+ 	// redirect로 응답
+ 	res.redirect('/process/showCookie');
+ });
+
+ // 404 에러 페이지 처리
+ var errorHandler = expressErrorHandler({
+     static: {
+       '404': './public/404.html'
+     }
+ });
+
+ app.use( expressErrorHandler.httpError(404) );
+ app.use( errorHandler );
+
+
+ http.createServer(app).listen(app.get('port'), function(){
+   console.log('Express server listening on port ' + app.get('port'));
+ });
+
+ // 세션 처리하기
+ 
+
+ /**
+  * session 사용하기
+  */
+
+ var express = require('express')
+   , http = require('http')
+   , path = require('path');
+
+ var bodyParser = require('body-parser');
+ var cookieParser = require('cookie-parser');
+ var expressSession = require('express-session');
+
+
+ // 에러 핸들러 모듈 사용
+ var expressErrorHandler = require('express-error-handler');
+
+ var app = express();
+
+ app.set('port', process.env.PORT || 3000);
+
+ app.use('/public', express.static(path.join(__dirname, 'public')));
+
+
+ app.use(bodyParser.urlencoded({ extended: false }));
+ app.use(bodyParser.json());
+
+ app.use(cookieParser());
+ app.use(expressSession({
+ 	secret:'my key',
+ 	resave:true,
+ 	saveUninitialized:true
+ }));
+  
+
+ app.get('/process/product', function(req, res) {
+ 	console.log('/process/product 호출됨.');
+ 	
+ 	if (req.session.user) {
+ 		res.redirect('/public/product.html');
+ 	} else {
+ 		res.redirect('/public/login2.html');
+ 	}
+ });
+
+ app.post('/process/login', function(req, res) {
+ 	console.log('/process/login 호출됨.');
+
+ 	var paramId = req.param('id');
+ 	var paramPassword = req.param('password');
+ 	
+ 	if (req.session.user) {
+ 		// 이미 로그인된 상태
+ 		console.log('이미 로그인되어 상품 페이지로 이동합니다.');
+ 		
+ 		res.redirect('/public/product.html');
+ 	} else {
+ 		// 세션 저장
+ 		req.session.user = {
+ 			id: paramId,
+ 			name: '소녀시대',
+ 			authorized: true
+ 		};
+ 		
+ 		res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+ 		res.write('<h1>로그인 성공</h1>');
+ 		res.write('<div><p>Param id : ' + paramId + '</p></div>');
+ 		res.write('<div><p>Param password : ' + paramPassword + '</p></div>');
+ 		res.write("<br><br><a href='/process/product'>상품 페이지로 이동하기</a>");
+ 		res.end();
+ 	}
+ });
+
+ app.get('/process/logout', function(req, res) {
+ 	console.log('/process/login 호출됨.');
+ 	
+ 	if (req.session.user) {
+ 		// 로그인된 상태
+ 		console.log('로그아웃합니다.');
+ 		
+ 		req.session.destroy(function(err) {
+ 			if (err) {throw err;}
+ 			
+ 			console.log('세션을 삭제하고 로그아웃되었습니다.');
+ 			res.redirect('/public/login2.html');
+ 		});
+ 	} else {
+ 		// 로그인 안된 상태
+ 		console.log('아직 로그인되어있지 않습니다.');
+ 		
+ 		res.redirect('/public/login2.html');
+ 	}
+ });	
+
+
+//404 에러 페이지 처리
+var errorHandler = expressErrorHandler({
+  static: {
+    '404': './public/404.html'
+  }
+});
+
+app.use( expressErrorHandler.httpError(404) );
+app.use( errorHandler );
+
+
+http.createServer(app).listen(app.get('port'), function(){
+console.log('Express server listening on port ' + app.get('port'));
+});
+
+//로그인 -> 세션에 user 정보 있는지 확인 -> 없으면 세션에 저장 -> 있으면 상품페이지로 이동
+//로그아웃 -> 세션에서 삭제
+
+//05-6 파일 업로드 기능 만들기
+//파일을 업로드 할 때는 멀티 파트 포맷으로 된 파일 업로드 기능을 사용하며 파일 업로드 상태 등을 확인할 수 있습니다.
+
+//### 멀티 파트 포맷은 웹 서버에서 파일을 업로드 하기 위해 사용한다.
+
+
+/**
+* 파일 업로드
+* 
+* 클라이언트에서 업로드 시 지정한 파일의 이름 : photo
+*/
+
+var express = require('express')
+, http = require('http')
+, path = require('path');
+
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var expressSession = require('express-session');
+
+//파일 업로드용 미들웨어
+var multer = require('multer');
+var fs = require('fs');
+
+
+//클라이언트에서 ajax로 요청 시 CORS(다중 서버 접속) 지원
+var cors = require('cors');
+
+
+//에러 핸들러 모듈 사용
+var expressErrorHandler = require('express-error-handler');
+
+var app = express();
+
+app.set('port', process.env.PORT || 3000);
+
+app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+
+
+app.use(cookieParser());
+app.use(expressSession({
+	secret:'my key',
+	resave:true,
+	saveUninitialized:true
+}));
+
+
+//클라이언트에서 ajax로 요청 시 CORS(다중 서버 접속) 지원
+app.use(cors());
+
+
+//파일 업로드용
+
+//multer 미들웨어를 사용 : 미들웨어 사용 순서 중요  body-parser -> multer -> router
+//파일 제한 : 10개, 1G
+app.use(multer({ 
+	dest: 'uploads',
+	putSingleFilesInArray: true,
+	limits: {
+		files: 10,
+		fileSize: 1024 * 1024 * 1024
+	},
+	rename: function (fieldname, filename) {
+	    return filename+Date.now();
+	},
+	onFileUploadStart: function (file, req, res) {
+	  file.uploadData = 0;
+	  console.log('파일 업로드 시작 : '+ file.originalname);
+	  
+	  var totalSize = req.param("totalSize");
+	  console.log('totalSize : %s', totalSize);
+	  
+	  if (totalSize) {
+		  file.totalSize = parseFloat(totalSize);
+	  }
+	},
+	onFileUploadComplete: function (file, req, res) {
+	  console.log('파일 업로드 완료 : ' + file.fieldname + ' ->  ' + file.path);
+	}
+}));
 
 
 
+//파일 업로드 패스에 대한 라우팅
+app.post('/process/photo', function(req, res) {
+	console.log('/process/photo 호출됨.');
+	
+	try {
+		var files = req.files.photo;
+	
+		// 현재의 파일 정보를 저장할 변수 선언
+		var originalname = '',
+			name = '',
+			mimetype = '',
+			size = 0;
+		
+		if (Array.isArray(files)) {   // 배열에 들어가 있는 경우 (설정에서 1개의 파일도 배열에 넣게 했음)
+	        console.log("배열에 들어있는 파일 갯수 : %d", files.length);
+	        
+	        for (var index = 0; index < files.length; index++) {
+	        	originalname = files[index].originalname;
+	        	name = files[index].name;
+	        	mimetype = files[index].mimetype;
+	        	size = files[index].size;
+	        }
+	        
+	    } else {   // 배열에 들어가 있지 않은 경우 (현재 설정에서는 해당 없음)
+	        console.log("파일 갯수 : 1 ");
+	        
+	    	originalname = files[index].originalname;
+	    	name = files[index].name;
+	    	mimetype = files[index].mimetype;
+	    	size = files[index].size;
+	    }
+		
+		console.log('현재 파일 정보 : ' + originalname + ', ' + name + ', '
+				+ mimetype + ', ' + size);
+		
+		// 클라이언트에 응답 전송
+		res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+		res.write('<h3>파일 업로드 성공</h3>');
+		res.write('<hr/>');
+		res.write('<p>원본 파일명 : ' + originalname + ' -> 저장 파일명 : ' + name + '</p>');
+		res.write('<p>MIME TYPE : ' + mimetype + '</p>');
+		res.write('<p>파일 크기 : ' + size + '</p>');
+		res.end();
+		
+	} catch(err) {
+		console.dir(err.stack);
+	}	
+		
+});
+
+
+app.get('/process/product', function(req, res) {
+	console.log('/process/product 호출됨.');
+	
+	if (req.session.user) {
+		res.redirect('/public/product.html');
+	} else {
+		res.redirect('/public/login2.html');
+	}
+});
+
+app.post('/process/login', function(req, res) {
+	console.log('/process/login 호출됨.');
+
+	var paramId = req.param('id');
+	var paramPassword = req.param('password');
+	
+	if (req.session.user) {
+		// 이미 로그인된 상태
+		console.log('이미 로그인되어 상품 페이지로 이동합니다.');
+		
+		res.redirect('/public/product.html');
+	} else {
+		// 세션 저장
+		req.session.user = {
+			id: paramId,
+			name: '소녀시대',
+			authorized: true
+		};
+		
+		res.writeHead('200', {'Content-Type':'text/html;charset=utf8'});
+		res.write('<h1>로그인 성공</h1>');
+		res.write('<div><p>Param id : ' + paramId + '</p></div>');
+		res.write('<div><p>Param password : ' + paramPassword + '</p></div>');
+		res.write("<br><br><a href='/process/product'>상품 페이지로 이동하기</a>");
+		res.end();
+	}
+});
+
+app.get('/process/logout', function(req, res) {
+	console.log('/process/login 호출됨.');
+	
+	if (req.session.user) {
+		// 로그인된 상태
+		console.log('로그아웃합니다.');
+		
+		req.session.destroy(function(err) {
+			if (err) {throw err;}
+			
+			console.log('세션을 삭제하고 로그아웃되었습니다.');
+			res.redirect('/public/login2.html');
+		});
+	} else {
+		// 로그인 안된 상태
+		console.log('아직 로그인되어있지 않습니다.');
+		
+		res.redirect('/public/login2.html');
+	}
+});	
+
+//404 에러 페이지 처리
+var errorHandler = expressErrorHandler({
+  static: {
+    '404': './public/404.html'
+  }
+});
+
+app.use( expressErrorHandler.httpError(404) );
+app.use( errorHandler );
+
+
+http.createServer(app).listen(app.get('port'), function(){
+console.log('Express server listening on port ' + app.get('port'));
+});
+
+// 클라이언트의 요청 처리 함수 추가하기
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+ 
+ 
